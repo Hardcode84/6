@@ -54,6 +54,8 @@ repos:
 ## Current Behavior
 
 - Normalizes simple `include` and `foreach` spacing.
+- Sorts consecutive `include` blocks while preserving blank-line and comment
+  group boundaries.
 - Expands long one-line `let arguments = (ins ...)` and
   `let results = (outs ...)` DAGs.
 - Wraps long ODS op headers with final trait lists.

@@ -151,6 +151,14 @@ def _format_simple_dag_let(line: str, *, line_width: int) -> list[str] | None:
     return formatted
 
 
+def _format_include(line: str) -> tuple[str, str] | None:
+    stripped_line = _strip_trailing_whitespace(line)
+    if match := _INCLUDE_RE.match(stripped_line):
+        indent, path = match.groups()
+        return path, f"{indent}include {path}"
+    return None
+
+
 def _format_header_square_list(line: str, *, line_width: int) -> list[str] | None:
     stripped_line = _strip_trailing_whitespace(line)
     if len(stripped_line) <= line_width or not _HEADER_RE.match(stripped_line):
@@ -196,10 +204,6 @@ def _format_line(line: str, *, line_width: int) -> list[str]:
     if header_lines is not None:
         return header_lines
 
-    if match := _INCLUDE_RE.match(stripped_line):
-        indent, path = match.groups()
-        return [f"{indent}include {path}"]
-
     if match := _FOREACH_RE.match(stripped_line):
         indent, name, value = match.groups()
         return [f"{indent}foreach {name} = {value} in {{"]
@@ -214,26 +218,41 @@ def format_text(text: str, *, line_width: int = DEFAULT_LINE_WIDTH) -> str:
 
     lines = text.splitlines()
     formatted: list[str] = []
+    include_block: list[tuple[str, str]] = []
     enabled = True
     opaque_depth = 0
+
+    def flush_include_block() -> None:
+        if include_block:
+            formatted.extend(
+                line for _, line in sorted(include_block, key=lambda item: item[0])
+            )
+            include_block.clear()
 
     for line in lines:
         stripped = line.strip()
 
         if stripped == "// tgenfmt: off":
+            flush_include_block()
             enabled = False
             formatted.append(_strip_trailing_whitespace(line))
             continue
         if stripped == "// tgenfmt: on":
+            flush_include_block()
             enabled = True
             formatted.append(_strip_trailing_whitespace(line))
             continue
 
         if not enabled or opaque_depth:
+            flush_include_block()
             formatted.append(line)
         elif _contains_opaque_start(line):
+            flush_include_block()
             formatted.append(line)
+        elif include := _format_include(line):
+            include_block.append(include)
         else:
+            flush_include_block()
             formatted.extend(_format_line(line, line_width=line_width))
 
         if _contains_opaque_start(line):
@@ -241,6 +260,7 @@ def format_text(text: str, *, line_width: int = DEFAULT_LINE_WIDTH) -> str:
         if opaque_depth and _contains_opaque_end(line):
             opaque_depth = max(0, opaque_depth - line.count("}]"))
 
+    flush_include_block()
     return "\n".join(formatted) + "\n"
 
 

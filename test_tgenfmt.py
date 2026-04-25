@@ -18,6 +18,58 @@ def test_normalizes_safe_tablegen_spacing() -> None:
     assert format_text("foreach kind=[\"a\"] in {  \n") == 'foreach kind = ["a"] in {\n'
 
 
+def test_sorts_consecutive_include_block() -> None:
+    source = _dedent(
+        """\
+        include "mlir/IR/OpBase.td"
+        include "mlir/Dialect/Func/IR/FuncOps.td"
+        include "mlir/Interfaces/SideEffectInterfaces.td"
+        """
+    )
+    assert format_text(source) == _dedent(
+        """\
+        include "mlir/Dialect/Func/IR/FuncOps.td"
+        include "mlir/IR/OpBase.td"
+        include "mlir/Interfaces/SideEffectInterfaces.td"
+        """
+    )
+
+
+def test_sorts_include_groups_independently() -> None:
+    source = _dedent(
+        """\
+        include "mlir/IR/OpBase.td"
+        include "mlir/Dialect/Func/IR/FuncOps.td"
+
+        // Keep comments attached to the next group.
+        include "mlir/Transforms/Passes.td"
+        include "mlir/Pass/PassBase.td"
+        """
+    )
+    assert format_text(source) == _dedent(
+        """\
+        include "mlir/Dialect/Func/IR/FuncOps.td"
+        include "mlir/IR/OpBase.td"
+
+        // Keep comments attached to the next group.
+        include "mlir/Pass/PassBase.td"
+        include "mlir/Transforms/Passes.td"
+        """
+    )
+
+
+def test_does_not_sort_disabled_include_block() -> None:
+    source = _dedent(
+        """\
+        // tgenfmt: off
+        include "mlir/IR/OpBase.td"
+        include "mlir/Dialect/Func/IR/FuncOps.td"
+        // tgenfmt: on
+        """
+    )
+    assert format_text(source) == source
+
+
 def test_preserves_let_and_defvar_alignment() -> None:
     source = _dedent(
         """\

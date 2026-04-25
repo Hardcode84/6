@@ -103,7 +103,8 @@ Formatter policy:
 
 - Keep one include per line.
 - Preserve grouping blank lines.
-- Do not sort includes unless a later project policy explicitly requires it.
+- Sort consecutive include lines lexicographically within each group.
+- Treat blank lines and comments as group boundaries.
 
 ## Records
 
