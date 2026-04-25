@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+[project]
+name = "tgenfmt"
+version = "0.1.0"
+description = "Conservative pre-commit formatter for LLVM TableGen files."
+license = "Apache-2.0"
+requires-python = ">=3.9"
+
+[project.scripts]
+tgenfmt = "tgenfmt:main"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["tgenfmt"]

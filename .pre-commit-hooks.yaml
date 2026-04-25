@@ -1,0 +1,6 @@
+-   id: tgenfmt
+    name: Format LLVM TableGen files
+    entry: tgenfmt
+    language: python
+    files: \.td$
+    description: Conservatively format LLVM TableGen files.
