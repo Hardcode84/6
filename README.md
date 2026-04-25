@@ -32,7 +32,7 @@ Use this repository as a pre-commit hook:
 
 ```yaml
 repos:
--   repo: https://github.com/your-org/tgenfmt
+-   repo: git@github.com:Hardcode84/6.git
     rev: v0.1.0
     hooks:
     -   id: tgenfmt
